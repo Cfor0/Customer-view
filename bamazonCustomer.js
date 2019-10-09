@@ -20,13 +20,21 @@ const displayItems = () => {
     var query = "SELECT * FROM products";
     connection.query(query, (err, res) => {
         if (err) throw err;
-        console.log(`
-ID: ${res}
+        for (var i = 0; i < res.length; i++) {
+            console.log(`
+=============================
+ID:       ${res[i].id}
+Name:     ${res[i].title}
+Price:    ${res[i].price}
+Quantity: ${res[i].quantity}
+=============================
         `)
+        }
+
     })
 }
 const runSearch = () => {
-
+    displayItems();
     inquirer
         .prompt({
             //ask them the ID of the product they would like to buy
@@ -38,23 +46,24 @@ const runSearch = () => {
             ]
         })
         .then(function (answer) {
-            console.log(answer.action);
+            const userId = answer.action
+            console.log(userId);
             var query = "SELECT * FROM products WHERE ?";
-            connection.query(query, { id: answer.action }, function (err, res) {
+            connection.query(query, { id: userId }, function (err, res) {
                 if (err) throw err;
                 for (var i = 0; i < res.length; i++) {
                     console.log(`
 Item selected:   ${res[i].title}
 Quantity:        ${res[i].quantity} `)
                 }
-                unitAmount();
+                unitAmount(userId);
             });
         });
 }
 
 
 
-const unitAmount = () => {
+const unitAmount = (userId) => {
     //ask how many units of the product they would like to buy
     inquirer
         .prompt({
@@ -64,14 +73,30 @@ const unitAmount = () => {
 
         })
         .then(function (answer) {
-            var query = "SELECT quantity FROM products";
-            connection.query(query, function (err, res) {
-                if (err) throw err;
-                for (var i = 0; i < res.length; i++) {
+            var unitAmount = answer.amount
+            var query = `SELECT quantity FROM products WHERE id="${userId}"`;
+            console.log("userID :" + userId)
+            connection.query(query
+                , function (err, res) {
+                    if (err) throw err;
 
-                }
-            });
+                    if (unitAmount > res[0].quantity) {
+                        console.log("Sorry, but we do not have that many in stock...");
+                        connection.end();
+                    } else {
+                        updateQuanity(userId, unitAmount);
+                    }
+
+                });
         });
+}
+
+const updateQuanity = (userId, unitAmount) => {
+    var query = `UPDATE products SET quantity=${unitAmount} WHERE id=?`;
+    connection.query(query, [userId], function (err, res) {
+        if (err) throw err;
+
+    })
 }
 
 
