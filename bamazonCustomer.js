@@ -75,31 +75,59 @@ const unitAmount = (userId) => {
         .then(function (answer) {
             var unitAmount = answer.amount
             var query = `SELECT quantity FROM products WHERE id="${userId}"`;
-            console.log("userID :" + userId)
             connection.query(query
                 , function (err, res) {
+                    let tableAmount = res[0].quantity;
                     if (err) throw err;
 
                     if (unitAmount > res[0].quantity) {
                         console.log("Sorry, but we do not have that many in stock...");
                         connection.end();
                     } else {
-                        updateQuanity(userId, unitAmount);
+                        updateQuanity(userId, unitAmount, tableAmount);
                     }
 
                 });
         });
 }
 
-const updateQuanity = (userId, unitAmount) => {
-    var query = `UPDATE products SET quantity=${unitAmount} WHERE id=?`;
-    connection.query(query, [userId], function (err, res) {
-        if (err) throw err;
 
-    })
+const updateQuanity = (userId, unitAmount, tableAmount) => {
+    var query = connection.query(
+        "UPDATE products SET ? WHERE ?",
+        [
+            {
+                quantity: tableAmount - unitAmount
+            },
+            {
+                id: userId
+            }
+        ],
+        (err) => {
+            if (err) throw err;
+            console.log("Thanks for your purchase!");
+            showUpdate(userId, unitAmount);
+            connection.end()
+        }
+    )
 }
-
-
+const showUpdate = (userId, unitAmount) => {
+    var query = connection.query(
+        "SELECT * FROM products WHERE ?",
+        [
+            {
+                id: userId
+            }
+        ],
+        (err, res) => {
+            if (err) throw err;
+            var priceOutcome = res[0].price * unitAmount;
+            console.log(`
+That was ${priceOutcome} for each unit!!
+There are ${res[0].quantity} left in stock...` )
+        }
+    )
+}
 
 
 
