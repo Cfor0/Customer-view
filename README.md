@@ -1,11 +1,15 @@
 # Customer-view
 
-*The use of this application is to create a customer view of 10 specific items from a `sql` database and update the database from the customer purchases.
+*The use of this application is to create a customer view of 10 specific items from a `sql` database and update the database from the user purchases on the command line.*
 
-**An example of the app is in the customer-view.gif
+![gif](customer-view.gif)
 
-* I used the "npm inquirer" for the two prompted questions. and "mysql" for access to the database.
- 
+## Built With
+* node
+* "npm inquirer"
+* "mySQL"
+
+## Overview
 First function is a template literal of the table `products` so the customer can see what he might be interested in.
   *The first prompt question then asks which item he wishes to purchase.
 
